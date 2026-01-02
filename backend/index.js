@@ -1,3 +1,8 @@
+
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+
+
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -8,6 +13,7 @@ const path = require("path");
 dotenv.config();
 const app = express();
 
+/* -------------------- File upload (multer) -------------------- */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, "uploads"));
@@ -20,6 +26,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+/* -------------------- Middlewares -------------------- */
 app.use(
   cors({
     origin: "http://localhost:5173", // your React dev server
@@ -29,6 +36,7 @@ app.use(
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // serve uploaded files
 
+/* -------------------- MySQL pool -------------------- */
 const pool = mysql.createPool({
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "root",
@@ -40,6 +48,14 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+
+/* -------------------- Basic test routes -------------------- */
 app.get("/", (req, res) => {
   res.send("Backend is running 🎉");
 });
@@ -54,6 +70,7 @@ app.get("/api/test-db", async (req, res) => {
   }
 });
 
+/* -------------------- Courses -------------------- */
 app.get("/api/courses", async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM courses");
@@ -64,6 +81,7 @@ app.get("/api/courses", async (req, res) => {
   }
 });
 
+/* -------------------- Submit application (with files) -------------------- */
 app.post(
   "/api/applications",
   upload.fields([
@@ -137,6 +155,7 @@ app.post(
   }
 );
 
+/* -------------------- Get all applications (admin/faculty) -------------------- */
 app.get("/api/applications", async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -170,6 +189,7 @@ app.get("/api/applications", async (req, res) => {
   }
 });
 
+/* -------------------- Update status (approve / reject) -------------------- */
 app.patch("/api/applications/:id/status", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -196,6 +216,7 @@ app.patch("/api/applications/:id/status", async (req, res) => {
   }
 });
 
+/* -------------------- Admin: document verification toggle -------------------- */
 app.patch("/api/applications/:id/verification", async (req, res) => {
   const { id } = req.params;
   const { verified } = req.body; // true / false
@@ -246,6 +267,7 @@ app.patch("/api/applications/:id/verification", async (req, res) => {
   }
 });
 
+/* -------------------- Faculty: document verification toggle -------------------- */
 app.patch("/api/applications/:id/faculty-verification", async (req, res) => {
   const { id } = req.params;
   const { verified } = req.body; // true / false
@@ -293,6 +315,7 @@ app.patch("/api/applications/:id/faculty-verification", async (req, res) => {
   }
 });
 
+/* -------------------- Admin: set interview date -------------------- */
 app.patch("/api/applications/:id/interview-date", async (req, res) => {
   const { id } = req.params;
   const { interview_date } = req.body; // ISO string from frontend
@@ -314,6 +337,7 @@ app.patch("/api/applications/:id/interview-date", async (req, res) => {
   }
 });
 
+/* -------------------- Student lookup by ID + email -------------------- */
 app.post("/api/applications/lookup", async (req, res) => {
   const { id, email } = req.body;
 
@@ -360,6 +384,7 @@ app.post("/api/applications/lookup", async (req, res) => {
   }
 });
 
+/* -------------------- Single application by ID (admin detail) -------------------- */
 app.get("/api/applications/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -400,6 +425,43 @@ app.get("/api/applications/:id", async (req, res) => {
   }
 });
 
+
+app.post("/api/payment/create-order", async (req, res) => {
+  try {
+    const order = await razorpay.orders.create({
+      amount: 100 * 100, // ₹100 in paise
+      currency: "INR",
+      receipt: "admission_fee_" + Date.now(),
+    });
+
+    res.json(order);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create order" });
+  }
+});
+
+
+app.post("/api/payment/verify", (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(body)
+    .digest("hex");
+
+  if (expectedSignature === razorpay_signature) {
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ success: false });
+  }
+});
+
+
+
+/* -------------------- Start server -------------------- */
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
