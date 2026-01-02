@@ -5,7 +5,6 @@ import Home from "./components/home/Home";
 import AllNews from "./components/home/AllNews";
 import Login from "./components/login/Login";
 import StudentDashboard from "./components/dashboards/StudentDashboard";
-//import FacultyReviewerDashboard from "./components/dashboards/FacultyReviewerDashboard";
 import AdminDashboard from "./components/dashboards/AdminDashboard";
 import AdmissionOfficerDashboard from "./components/dashboards/AdmissionOfficerDashboard";
 import PaymentPage from "./components/dashboards/PaymentPage";
