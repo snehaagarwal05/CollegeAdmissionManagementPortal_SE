@@ -71,7 +71,7 @@ This system eliminates manual paperwork, reduces errors, and improves transparen
 3️. Frontend Setup
     cd frontend
     npm install
-    npm start
+    npm run dev
 
 ########--------- Demo Login Credentials ----------########
 
@@ -85,3 +85,10 @@ This system eliminates manual paperwork, reduces errors, and improves transparen
         Existing Student 2
             Email: student2@gmail.com
             Password: student456
+
+########--------- Learning Outcomes ----------########
+
+    Practical understanding of MERN stack
+    Authentication & authorization implementation
+    Full-stack project architecture
+    Real-world problem-solving experience
