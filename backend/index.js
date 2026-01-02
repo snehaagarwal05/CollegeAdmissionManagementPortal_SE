@@ -460,6 +460,102 @@ app.post("/api/payment/verify", (req, res) => {
 });
 
 
+/* -------------------- ADMIN REQUESTS EXTRA DOCUMENT -------------------- */
+app.post("/api/applications/:id/request-document", async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+
+  if (!reason) {
+    return res.status(400).json({ error: "Reason is required" });
+  }
+
+  try {
+    await pool.query(
+      `INSERT INTO additional_documents (application_id, reason, status)
+       VALUES (?, ?, 'requested')`,
+      [id, reason]
+    );
+
+    res.json({ message: "Additional document requested successfully" });
+  } catch (err) {
+    console.error("Request document error:", err);
+    res.status(500).json({ error: "Failed to request document" });
+  }
+});
+
+/* -------------------- GET REQUESTED EXTRA DOCUMENTS -------------------- */
+app.get("/api/applications/:id/additional-documents", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, reason, status, file_path, created_at, uploaded_at
+       FROM additional_documents
+       WHERE application_id = ?
+       ORDER BY created_at DESC`,
+      [id]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error("Fetch additional docs error:", err);
+    res.status(500).json({ error: "Failed to fetch additional documents" });
+  }
+});
+
+/* -------------------- STUDENT UPLOADS REQUESTED DOCUMENT -------------------- */
+app.post(
+  "/api/additional-documents/:docId/upload",
+  upload.single("file"), // ✅ MUST be "file"
+  async (req, res) => {
+    const { docId } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const filePath = `/uploads/${req.file.filename}`;
+
+    try {
+      const [result] = await pool.query(
+        `UPDATE additional_documents
+         SET file_path = ?, status = 'uploaded', uploaded_at = NOW()
+         WHERE id = ?`,
+        [filePath, docId]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Document request not found" });
+      }
+
+      res.json({ message: "Document uploaded successfully" });
+    } catch (err) {
+      console.error("Upload extra doc error:", err);
+      res.status(500).json({ error: "Failed to upload document" });
+    }
+  }
+);
+
+/* -------------------- ADMIN APPROVES EXTRA DOCUMENT -------------------- */
+app.patch("/api/additional-documents/:docId/approve", async (req, res) => {
+  const { docId } = req.params;
+
+  try {
+    const [result] = await pool.query(
+      "UPDATE additional_documents SET status = 'approved' WHERE id = ?",
+      [docId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Document request not found" });
+    }
+
+    res.json({ message: "Additional document approved" });
+  } catch (err) {
+    console.error("Approve extra doc error:", err);
+    res.status(500).json({ error: "Failed to approve document" });
+  }
+});
 
 /* -------------------- Start server -------------------- */
 const PORT = process.env.PORT || 5000;
