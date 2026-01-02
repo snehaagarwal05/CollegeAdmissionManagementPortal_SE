@@ -16,12 +16,14 @@ This system eliminates manual paperwork, reduces errors, and improves transparen
 ########---------- User Roles ----------########
 
     1. Student
+    
         Register and log in
         Fill and submit admission application
         Upload required documents
         View application status
         Proceed to application fee payment
     2. Admin
+    
         Secure admin login
         View all student applications
         Verify and approve/reject applications
@@ -68,7 +70,7 @@ This system eliminates manual paperwork, reduces errors, and improves transparen
     npm install
     npm start
 
-3️. Frontend Setup
+3. Frontend Setup
     cd frontend
     npm install
     npm run dev
