@@ -11,6 +11,12 @@ const AdminApplicationDetail = () => {
   const [interviewDate, setInterviewDate] = useState("");
   const [savingInterview, setSavingInterview] = useState(false);
 
+  // 🔹 ADD BELOW EXISTING STATES (do not remove anything)
+const [extraDocReason, setExtraDocReason] = useState("");
+const [requestedDocs, setRequestedDocs] = useState([]);
+const [requestingDoc, setRequestingDoc] = useState(false);
+
+
   const navigate = useNavigate();
 
   // Load application details
@@ -40,6 +46,8 @@ const AdminApplicationDetail = () => {
     };
 
     fetchDetail();
+    loadRequestedDocs();
+
   }, [id, navigate]);
 
   /* ------------------- UPDATE STATUS (APPROVE / REJECT) ------------------- */
@@ -154,6 +162,61 @@ const AdminApplicationDetail = () => {
       setSavingInterview(false);
     }
   };
+
+  /* -------------------- REQUEST EXTRA DOCUMENT -------------------- */
+
+// fetch already requested extra documents
+const loadRequestedDocs = async () => {
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/applications/${id}/additional-documents`
+    );
+    const data = await res.json();
+    if (res.ok) {
+      setRequestedDocs(data);
+    }
+  } catch (err) {
+    console.error("Failed to load extra documents");
+  }
+};
+
+// request a new document
+const requestExtraDocument = async () => {
+  if (!extraDocReason.trim()) {
+    alert("Please enter the reason for requesting the document");
+    return;
+  }
+
+  if (!window.confirm("Request additional document from student?")) return;
+
+  setRequestingDoc(true);
+
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/applications/${id}/request-document`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: extraDocReason }),
+      }
+    );
+
+    if (!res.ok) {
+      alert("Failed to request document");
+      return;
+    }
+
+    setExtraDocReason("");
+    loadRequestedDocs();
+    alert("Additional document requested successfully");
+  } catch (err) {
+    console.error(err);
+    alert("Network error while requesting document");
+  } finally {
+    setRequestingDoc(false);
+  }
+};
+
 
   /* ------------------------------ RENDER -------------------------------- */
 
@@ -373,6 +436,56 @@ const AdminApplicationDetail = () => {
           (Students see their document status and interview / exam date on their
           profile.)
         </p>
+
+          {/* ================= REQUEST ADDITIONAL DOCUMENTS ================= */}
+<div className="detail-card">
+  <h2>Request Additional Documents</h2>
+
+  <textarea
+    rows="3"
+    placeholder="Reason for requesting additional document"
+    value={extraDocReason}
+    onChange={(e) => setExtraDocReason(e.target.value)}
+    style={{ width: "100%", marginBottom: "10px" }}
+  />
+
+  <button
+    className="btn-small approve"
+    disabled={requestingDoc}
+    onClick={requestExtraDocument}
+  >
+    📄 Request Document
+  </button>
+
+  {requestedDocs.length > 0 && (
+    <>
+      <h3 style={{ marginTop: "1rem" }}>Requested Documents</h3>
+      <ul>
+        {requestedDocs.map((doc) => (
+          <li key={doc.id}>
+            <strong>Reason:</strong> {doc.reason} <br />
+            <strong>Status:</strong> {doc.status}
+            {doc.file_path && (
+              <>
+                {" "}
+                |{" "}
+                <a
+                  href={`http://localhost:5000${doc.file_path}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View Uploaded File
+                </a>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    </>
+  )}
+</div>
+
+
       </div>
     </div>
   );
