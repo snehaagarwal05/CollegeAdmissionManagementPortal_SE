@@ -1,92 +1,61 @@
-import React, { useState, useEffect } from "react";
-import "./CampusLife.css"; // make sure this file exists and is imported
-
-const slides = {
-  playground: [
-    "https://images.unsplash.com/photo-1505678261036-a3fcc5e884ee?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80",
-  ],
-  classroom: [
-    "https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80",
-  ],
-  canteen: [
-    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
-  ],
-  hostel: [
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1200&q=80",
-  ],
-};
-
-function CardSlider({ images }) {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => {
-      setIndex((p) => (p + 1) % images.length);
-    }, 3500);
-    return () => clearInterval(t);
-  }, [images.length]);
-
-  const prev = () => setIndex((p) => (p - 1 + images.length) % images.length);
-  const next = () => setIndex((p) => (p + 1) % images.length);
-
-  return (
-    <div className="card-slider">
-      <button className="card-btn left" onClick={prev} aria-label="Previous">‹</button>
-
-      <div className="card-image-wrap">
-        <img src={images[index]} alt={`slide-${index}`} className="card-image" />
-      </div>
-
-      <button className="card-btn right" onClick={next} aria-label="Next">›</button>
-
-      <div className="card-dots">
-        {images.map((_, i) => (
-          <button
-            key={i}
-            className={`card-dot ${i === index ? "active" : ""}`}
-            onClick={() => setIndex(i)}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
+.faculty-page {
+  padding: 30px;
+  font-family: Arial, sans-serif;
+  text-align: center;
 }
 
-export default function CampusLife() {
-  return (
-    <div className="campus-grid-page">
-      <h1 className="grid-main-title">Campus Life</h1>
+.faculty-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+}
 
-      <div className="grid-layout">
-        <section className="grid-card">
-          <h2 className="card-title">Playground & Sports Arena</h2>
-          <p className="card-text">Large playgrounds for cricket, football, athletics and more.</p>
-          <CardSlider images={slides.playground} />
-        </section>
+.faculty-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 25px;
+  padding: 10px;
+}
 
-        <section className="grid-card">
-          <h2 className="card-title">Modern Classrooms</h2>
-          <p className="card-text">Smart, spacious, well-lit classrooms for effective learning.</p>
-          <CardSlider images={slides.classroom} />
-        </section>
+.faculty-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
+}
 
-        <section className="grid-card">
-          <h2 className="card-title">Canteen & Dining</h2>
-          <p className="card-text">Healthy, hygienic and tasty food options for students.</p>
-          <CardSlider images={slides.canteen} />
-        </section>
+.faculty-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
 
-        <section className="grid-card">
-          <h2 className="card-title">Hostel & Residential Life</h2>
-          <p className="card-text">Safe, clean and comfortable hostels with study spaces.</p>
-          <CardSlider images={slides.hostel} />
-        </section>
-      </div>
-    </div>
-  );
+.faculty-photo {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 15px;
+}
+
+.faculty-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.faculty-dept {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.faculty-qual,
+.faculty-email,
+.faculty-exp,
+.faculty-ach {
+  font-size: 0.95rem;
+  color: #333;
+  margin: 4px 0;
 }
