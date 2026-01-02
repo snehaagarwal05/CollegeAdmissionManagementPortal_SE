@@ -10,6 +10,9 @@ const StudentApplicationStatus = () => {
   const [error, setError] = useState("");
   const [application, setApplication] = useState(null);
 
+  // 🔹 already present – we will now USE it properly
+  const [extraDocs, setExtraDocs] = useState([]);
+
   const handleChange = (e) => {
     setForm((prev) => ({
       ...prev,
@@ -28,6 +31,7 @@ const StudentApplicationStatus = () => {
     e.preventDefault();
     setError("");
     setApplication(null);
+    setExtraDocs([]); // 🔹 reset previous notifications
 
     if (!form.id.trim() || !form.email.trim()) {
       setError("Please enter both Application ID and Email.");
@@ -36,6 +40,7 @@ const StudentApplicationStatus = () => {
 
     setLoading(true);
     try {
+      // ================= APPLICATION LOOKUP =================
       const res = await fetch("http://localhost:5000/api/applications/lookup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,7 +58,18 @@ const StudentApplicationStatus = () => {
         return;
       }
 
+      // 🔹 existing behaviour – DO NOT TOUCH
       setApplication(data);
+
+      // ================= 🔔 FETCH EXTRA DOCUMENT REQUESTS =================
+      const docsRes = await fetch(
+        `http://localhost:5000/api/applications/${data.id}/additional-documents`
+      );
+      const docsData = await docsRes.json();
+
+      if (docsRes.ok) {
+        setExtraDocs(docsData);
+      }
     } catch (err) {
       console.error(err);
       setError("Network error. Please try again.");
@@ -108,7 +124,7 @@ const StudentApplicationStatus = () => {
           </form>
         </div>
 
-        {/* Result card */}
+        {/* ================= STUDENT APPLICATION RESULT ================= */}
         {application && (
           <div className="status-result-card">
             <div className="result-header">
@@ -264,11 +280,54 @@ const StudentApplicationStatus = () => {
             </div>
           </div>
         )}
+
+        {/* ================= 🔔 EXTRA DOCUMENT NOTIFICATION ================= */}
+        {extraDocs.length > 0 && (
+          <div className="alert-box">
+            <h3>⚠️ Additional Documents Required</h3>
+
+            {extraDocs.map((doc) => (
+              <div key={doc.id} className="extra-doc-card">
+                <p>
+                  <strong>Reason:</strong> {doc.reason}
+                </p>
+                <p>
+                  <strong>Status:</strong> {doc.status}
+                </p>
+
+                {doc.status === "requested" && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const file = e.target.file.files[0];
+                      const formData = new FormData();
+                      formData.append("file", file);
+
+                      fetch(
+                        `http://localhost:5000/api/additional-documents/${doc.id}/upload`,
+                        {
+                          method: "POST",
+                          body: formData,
+                        }
+                      )
+                        .then((res) => res.json())
+                        .then(() =>
+                          alert("Additional document uploaded successfully")
+                        );
+                    }}
+                  >
+                    <input type="file" name="file" required />
+                    <button type="submit">Upload Document</button>
+                  </form>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default StudentApplicationStatus;
-
 
