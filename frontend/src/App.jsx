@@ -22,7 +22,7 @@ import AdminApplications from "./components/AdminApplications/AdminApplications"
 import AdminApplicationDetail from "./components/AdminApplications/AdminApplicationDetail";
 import StudentApplicationStatus from "./components/student/StudentApplicationStatus";
 import FacultyReviewerDashboard from "./components/AdminApplications/FacultyReviewerDashboard";
-
+import ApplicationFee from "./components/Application";
 
 function App() {
   return (
