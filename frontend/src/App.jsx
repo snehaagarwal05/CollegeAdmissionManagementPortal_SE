@@ -119,6 +119,8 @@ function App() {
 
        <Route path="/facultyReviewer" element={<FacultyReviewerDashboard />} />
 
+        <Route path="/application-fee/:id" element={<ApplicationFee />} />
+
 
      </Routes>
     </Router>
