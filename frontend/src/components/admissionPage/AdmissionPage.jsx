@@ -138,8 +138,12 @@ const AdmissionForm = () => {
         "✅ Application submitted successfully! Your Application ID is: " +
           data.applicationId
       );
+
+      // after successful submission
+      navigate(`/application-fee/${data.applicationId}`);
+      
       setIsSubmitting(false);
-      navigate("/"); // go back to home
+      //navigate("/"); // go back to home
     } catch (err) {
       console.error("Network/other error:", err);
       alert("❌ Something went wrong while submitting. Please try again.");
