@@ -20,7 +20,7 @@ const IntroLoader = ({ onFinish }) => {
         }
         return prev + 1;
       });
-    }, 1000); // change image every 1 second
+    }, 300); // change image every 1 second
 
     return () => clearInterval(interval);
   }, [onFinish]);
@@ -38,3 +38,4 @@ const IntroLoader = ({ onFinish }) => {
 };
 
 export default IntroLoader;
+
