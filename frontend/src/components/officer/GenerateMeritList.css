@@ -1,0 +1,161 @@
+.merit-container {
+  padding: 40px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.merit-title {
+  font-size: 32px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.merit-subtitle {
+  text-align: center;
+  color: gray;
+  margin-bottom: 20px;
+}
+
+.merit-filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.merit-filters select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.merit-generate-btn,
+.merit-download-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: #1e3c72;
+  color: white;
+  cursor: pointer;
+}
+
+.merit-list {
+  margin-top: 20px;
+}
+
+.merit-card {
+  display: flex;
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.rank {
+  font-size: 22px;
+  font-weight: bold;
+  margin-right: 20px;
+}
+
+
+.merit-container {
+  width: 90%;
+  margin: auto;
+  padding-top: 20px;
+}
+
+.merit-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.merit-table th,
+.merit-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.status-pill {
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: white;
+  text-transform: capitalize;
+}
+
+.status-pill.selected {
+  background: #2ecc71;
+}
+
+.status-pill.waitlisted {
+  background: #f1c40f;
+}
+
+.status-pill.rejected {
+  background: #e74c3c;
+}
+
+.select-btn {
+  background: #2ecc71;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  margin-right: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.waitlist-btn {
+  background: #f1c40f;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  margin-right: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.reject-btn {
+  background: #e74c3c;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+
+.selection-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.select-btn {
+  background: #2ecc71;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.waitlist-btn {
+  background: #f1c40f;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.reject-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
