@@ -3,6 +3,9 @@ import "./CampusInfoSection.css";
 import { Link } from "react-router-dom";
 import { Bell, User, NotebookPen, LogIn } from "lucide-react";
 
+import AntiRaggingImg from "../../assets/img1.png";
+import ZeroToleranceImg from "../../assets/img2.png";
+
 const CampusInfoSection = () => {
   return (
     <div className="campus-section">
@@ -11,7 +14,7 @@ const CampusInfoSection = () => {
       <div className="campus-box">
         <h2>Ragging Free Campus</h2>
         <img
-          src="/images/ragging-free.png"
+          src={AntiRaggingImg}
           className="campus-img"
           alt="ragging"
         />
@@ -24,7 +27,7 @@ const CampusInfoSection = () => {
       <div className="campus-box">
         <h2>Zero Tolerance Policy</h2>
         <img
-          src="/images/zero-tolerance.png"
+          src={ZeroToleranceImg}
           className="campus-img"
           alt="zero tolerance"
         />
@@ -63,3 +66,4 @@ const CampusInfoSection = () => {
 };
 
 export default CampusInfoSection;
+
