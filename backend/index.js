@@ -414,6 +414,84 @@ app.patch("/api/additional-documents/:docId/approve", async (req, res) => {
     res.status(500).json({ error: "Failed to approve document" });
   }
 });
+app.post("/api/portal-register", async (req, res) => {
+  const { name, email, phone } = req.body;
+
+  if (!name || !email || !phone) {
+    return res.status(400).json({ error: "All fields required" });
+  }
+
+  try {
+    // 1️⃣ Get last student_id number
+    const [rows] = await pool.query(
+      "SELECT student_id FROM portal_students ORDER BY id DESC LIMIT 1"
+    );
+
+    let nextNumber = 1;
+    if (rows.length > 0) {
+      nextNumber = parseInt(rows[0].student_id) + 1;
+    }
+
+    // 2️⃣ Generate ID & password
+    const studentId = String(nextNumber).padStart(3, "0"); // 001
+    const password = `pass${nextNumber}`;                  // pass1
+
+    // 3️⃣ Insert into YOUR EXISTING TABLE
+    await pool.query(
+      `INSERT INTO portal_students 
+       (student_id, name, email, phone, password)
+       VALUES (?, ?, ?, ?, ?)`,
+      [studentId, name, email, phone, password]
+    );
+
+    // 4️⃣ Send credentials ONCE
+    res.json({
+      success: true,
+      studentId,
+      password
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Registration failed" });
+  }
+});
+app.get("/api/admin/portal-students", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT student_id, name, email, phone, created_at FROM portal_students"
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch students" });
+  }
+});
+
+
+
+// ------------------ GET STUDENT ID USING NAME + EMAIL ------------------
+app.post("/api/get-student-id", async (req, res) => {
+  const { name, email } = req.body;
+
+  if (!name || !email) {
+    return res.status(400).json({ error: "Name and email required" });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      "SELECT student_id FROM portal_students WHERE name = ? AND email = ?",
+      [name, email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    res.json({ studentId: rows[0].student_id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 
 
