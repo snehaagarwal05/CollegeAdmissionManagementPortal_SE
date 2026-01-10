@@ -1,0 +1,153 @@
+/* LAYOUT */
+.officer-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+/* SIDEBAR */
+.officer-sidebar {
+  width: 240px;
+  background: #0b2042;
+  color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.sidebar-nav .nav-item {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: transparent;
+  color: #dce6ff;
+  text-align: left;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background: #3157a1;
+  color: white;
+}
+
+/* MAIN AREA */
+.officer-main {
+  flex: 1;
+  padding: 35px;
+}
+
+/* HEADER */
+.officer-header h1 {
+  font-size: 28px;
+  margin-bottom: 5px;
+}
+
+.welcome-text {
+  color: gray;
+  margin-bottom: 25px;
+}
+
+/* STATS CARDS */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.stats-card {
+  padding: 20px;
+  border-radius: 15px;
+  color: white;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+  animation: fadeIn 0.4s ease;
+}
+
+.gradient-blue {
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, #11998e, #38ef7d);
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, #f7971e, #ffd200);
+}
+
+.stats-number {
+  font-size: 32px;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+/* ACTION CARDS */
+.actions-grid {
+  margin-top: 35px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.action-card {
+  padding: 25px;
+  border-radius: 18px;
+  background: white;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.action-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 7px 25px rgba(0,0,0,0.15);
+}
+
+.action-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+/* RECENT ACTIVITY */
+.recent-activity {
+  margin-top: 40px;
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.activity-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  color: #333;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.time {
+  color: gray;
+  font-size: 12px;
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
