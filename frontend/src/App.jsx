@@ -24,6 +24,11 @@ import AdminApplicationDetail from "./components/AdminApplications/AdminApplicat
 import StudentApplicationStatus from "./components/student/StudentApplicationStatus";
 import FacultyReviewerDashboard from "./components/AdminApplications/FacultyReviewerDashboard";
 import ApplicationFee from "./components/Application";
+import OfficerDashboard from "./components/officer/OfficerDashboard";
+import GenerateMeritList from "./components/officer/GenerateMeritList";
+import NotifyApplicants from "./components/officer/NotifyApplicants";
+import IssueAdmissionLetter from "./components/officer/IssueAdmissionLetter";
+
 
 function App() {
   const [showLoader, setShowLoader] = useState(true);
@@ -125,6 +130,11 @@ function App() {
        <Route path="/facultyReviewer" element={<FacultyReviewerDashboard />} />
 
         <Route path="/application-fee/:id" element={<ApplicationFee />} />
+
+        <Route path="/officer" element={<OfficerDashboard />} />
+        <Route path="/officer/merit-list" element={<GenerateMeritList />} />
+        <Route path="/officer/notify" element={<NotifyApplicants />} />
+        <Route path="/officer/admission-letter" element={<IssueAdmissionLetter />} />
 
 
      </Routes>
