@@ -21,12 +21,49 @@ CREATE TABLE courses (
 
 
 CREATE TABLE applications (
-  id INT AUTO_INCREMENT PRIMARY KEY ,
-  student_name VARCHAR(100) NOT NULL,
-  email VARCHAR(100) NOT NULL,
-  phone VARCHAR(20),
-  course_id INT,
-  status ENUM('pending','approved','rejected') DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  ,
-  FOREIGN KEY (course_id) REFERENCES courses(id)
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    student_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+
+    course_id INT,
+
+    photo_path VARCHAR(255),
+    signature_path VARCHAR(255),
+    marksheet10_path VARCHAR(255),
+    marksheet12_path VARCHAR(255),
+    entranceCard_path VARCHAR(255),
+    idProof_path VARCHAR(255),
+
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+
+    documents_verified TINYINT(1) NOT NULL DEFAULT 0,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    admin_verified TINYINT(1) NOT NULL DEFAULT 0,
+    faculty_verified TINYINT(1) NOT NULL DEFAULT 0,
+
+    interview_date DATE,
+
+    payment_status ENUM('pending','paid','failed') DEFAULT 'pending',
+    payment_id VARCHAR(100),
+    payment_amount INT DEFAULT 100,
+    payment_date TIMESTAMP NULL,
+
+    selection_status ENUM('none','selected','waitlisted','rejected') DEFAULT 'none',
+
+    FOREIGN KEY (course_id) REFERENCES courses(id)
 );
+
+CREATE TABLE additional_documents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    application_id INT NOT NULL,
+    reason VARCHAR(255) NOT NULL,
+    status ENUM('requested','submitted') DEFAULT 'requested',
+    file_path VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(id)
+);
+
