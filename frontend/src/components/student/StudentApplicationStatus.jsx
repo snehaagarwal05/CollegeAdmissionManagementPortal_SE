@@ -10,7 +10,7 @@ const StudentApplicationStatus = () => {
   const [error, setError] = useState("");
   const [application, setApplication] = useState(null);
 
-  // 🔹 already present – we will now USE it properly
+  // existing
   const [extraDocs, setExtraDocs] = useState([]);
 
   const handleChange = (e) => {
@@ -31,7 +31,7 @@ const StudentApplicationStatus = () => {
     e.preventDefault();
     setError("");
     setApplication(null);
-    setExtraDocs([]); // 🔹 reset previous notifications
+    setExtraDocs([]);
 
     if (!form.id.trim() || !form.email.trim()) {
       setError("Please enter both Application ID and Email.");
@@ -40,7 +40,7 @@ const StudentApplicationStatus = () => {
 
     setLoading(true);
     try {
-      // ================= APPLICATION LOOKUP =================
+      // fetch application
       const res = await fetch("http://localhost:5000/api/applications/lookup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,22 +54,19 @@ const StudentApplicationStatus = () => {
 
       if (!res.ok) {
         setError(data.error || "Something went wrong. Please try again.");
-        setApplication(null);
         return;
       }
 
-      // 🔹 existing behaviour – DO NOT TOUCH
+      // save application
       setApplication(data);
 
-      // ================= 🔔 FETCH EXTRA DOCUMENT REQUESTS =================
+      // fetch additional docs
       const docsRes = await fetch(
         `http://localhost:5000/api/applications/${data.id}/additional-documents`
       );
       const docsData = await docsRes.json();
 
-      if (docsRes.ok) {
-        setExtraDocs(docsData);
-      }
+      if (docsRes.ok) setExtraDocs(docsData);
     } catch (err) {
       console.error(err);
       setError("Network error. Please try again.");
@@ -81,7 +78,8 @@ const StudentApplicationStatus = () => {
   return (
     <div className="status-page">
       <div className="status-container">
-        {/* Top search card */}
+
+        {/* Search Card */}
         <div className="status-card">
           <h1 className="status-title">Check Application Status</h1>
           <p className="status-subtitle">
@@ -134,12 +132,8 @@ const StudentApplicationStatus = () => {
               </div>
               <div className="result-status-block">
                 <p className="result-label">Current Status</p>
-                <span
-                  className={`status-pill status-${
-                    application.status || "unknown"
-                  }`}
-                >
-                  {application.status || "Not set"}
+                <span className={`status-pill status-${application.status}`}>
+                  {application.status}
                 </span>
               </div>
             </div>
@@ -147,45 +141,45 @@ const StudentApplicationStatus = () => {
             <div className="result-grid">
               <div className="result-section">
                 <h3 className="section-title">Applicant Details</h3>
-                <p>
-                  <span className="field-label">Name:</span>{" "}
-                  {application.student_name}
-                </p>
-                <p>
-                  <span className="field-label">Email:</span>{" "}
-                  {application.email}
-                </p>
-                <p>
-                  <span className="field-label">Phone:</span>{" "}
-                  {application.phone || "Not provided"}
-                </p>
-                <p>
-                  <span className="field-label">Course:</span>{" "}
-                  {application.course_name || "Not available"}
-                </p>
+                <p><span className="field-label">Name:</span> {application.student_name}</p>
+                <p><span className="field-label">Email:</span> {application.email}</p>
+                <p><span className="field-label">Phone:</span> {application.phone || "Not provided"}</p>
+                <p><span className="field-label">Course:</span> {application.course_name}</p>
               </div>
 
               <div className="result-section">
                 <h3 className="section-title">Application Summary</h3>
+                <p><span className="field-label">Documents Verified:</span> {application.documents_verified ? "✅ Yes" : "❌ No"}</p>
+                <p><span className="field-label">Submitted On:</span> {formatDateTime(application.created_at)}</p>
                 <p>
-                  <span className="field-label">Documents Verified:</span>{" "}
-                  {application.documents_verified ? "✅ Yes" : "❌ No"}
-                </p>
-                <p>
-                  <span className="field-label">Submitted On:</span>{" "}
-                  {formatDateTime(application.created_at) ||
-                    "Not available"}
-                </p>
-                <p>
-                  <span className="field-label">
-                    Entrance Exam / Interview Date:
-                  </span>{" "}
+                  <span className="field-label">Interview Date:</span>{" "}
                   {application.interview_date
                     ? formatDateTime(application.interview_date)
                     : "Not scheduled yet"}
                 </p>
               </div>
             </div>
+
+            <div className="divider" />
+
+            {/* ================= 🔵 NEW SECTION — SELECTION STATUS ================= */}
+            <div className="result-section">
+              <h3 className="section-title">Admission Decision</h3>
+
+              {application.selection_status ? (
+                <p className="selection-status-box">
+                  <strong>Final Decision:</strong>{" "}
+                  {application.selection_status === "selected" && "🎉 Selected — Congratulations!"}
+                  {application.selection_status === "waitlisted" && "⏳ Waitlisted — Please wait for updates."}
+                  {application.selection_status === "rejected" && "❌ Not Selected — Try again next year."}
+                </p>
+              ) : (
+                <p className="selection-status-box">
+                  Decision Pending — Merit list not released yet.
+                </p>
+              )}
+            </div>
+            {/* ====================================================================== */}
 
             <div className="divider" />
 
@@ -206,6 +200,7 @@ const StudentApplicationStatus = () => {
                     "Not uploaded"
                   )}
                 </li>
+
                 <li>
                   <span>Signature:</span>{" "}
                   {application.signature_path ? (
@@ -220,6 +215,7 @@ const StudentApplicationStatus = () => {
                     "Not uploaded"
                   )}
                 </li>
+
                 <li>
                   <span>10th Marksheet:</span>{" "}
                   {application.marksheet10_path ? (
@@ -234,8 +230,9 @@ const StudentApplicationStatus = () => {
                     "Not uploaded"
                   )}
                 </li>
+
                 <li>
-                  <span>12th / Graduation Marksheet:</span>{" "}
+                  <span>12th Marksheet:</span>{" "}
                   {application.marksheet12_path ? (
                     <a
                       href={`http://localhost:5000${application.marksheet12_path}`}
@@ -248,8 +245,9 @@ const StudentApplicationStatus = () => {
                     "Not uploaded"
                   )}
                 </li>
+
                 <li>
-                  <span>Entrance Exam Scorecard:</span>{" "}
+                  <span>Entrance Scorecard:</span>{" "}
                   {application.entranceCard_path ? (
                     <a
                       href={`http://localhost:5000${application.entranceCard_path}`}
@@ -262,6 +260,7 @@ const StudentApplicationStatus = () => {
                     "Not uploaded"
                   )}
                 </li>
+
                 <li>
                   <span>ID Proof:</span>{" "}
                   {application.idProof_path ? (
@@ -281,19 +280,14 @@ const StudentApplicationStatus = () => {
           </div>
         )}
 
-        {/* ================= 🔔 EXTRA DOCUMENT NOTIFICATION ================= */}
+        {/* Extra document request */}
         {extraDocs.length > 0 && (
           <div className="alert-box">
             <h3>⚠️ Additional Documents Required</h3>
-
             {extraDocs.map((doc) => (
               <div key={doc.id} className="extra-doc-card">
-                <p>
-                  <strong>Reason:</strong> {doc.reason}
-                </p>
-                <p>
-                  <strong>Status:</strong> {doc.status}
-                </p>
+                <p><strong>Reason:</strong> {doc.reason}</p>
+                <p><strong>Status:</strong> {doc.status}</p>
 
                 {doc.status === "requested" && (
                   <form
@@ -311,9 +305,7 @@ const StudentApplicationStatus = () => {
                         }
                       )
                         .then((res) => res.json())
-                        .then(() =>
-                          alert("Additional document uploaded successfully")
-                        );
+                        .then(() => alert("Document uploaded successfully"));
                     }}
                   >
                     <input type="file" name="file" required />
@@ -330,4 +322,3 @@ const StudentApplicationStatus = () => {
 };
 
 export default StudentApplicationStatus;
-
