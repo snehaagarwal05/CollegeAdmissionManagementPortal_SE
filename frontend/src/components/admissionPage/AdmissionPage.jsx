@@ -6,38 +6,52 @@ const AdmissionForm = () => {
   const navigate = useNavigate();
 
   const [courses, setCourses] = useState([]);
+  const [autoFillEnabled, setAutoFillEnabled] = useState(false);
+
+  // Default dummy data
+  const defaultData = {
+    fullName: "Rajesh Kumar Singh",
+    email: "rajesh.kumar@example.com",
+    phone: "9876543210",
+    dob: "2005-05-15",
+    gender: "Male",
+    category: "General",
+    address: "123, Park Street, Lake Gardens",
+    city: "Kolkata",
+    state: "West Bengal",
+    pincode: "700045",
+    course: "", // Will be set to first course
+    qualification: "10+2",
+    percentage: "85.5%",
+    examName: "JEE Main",
+    examRank: "2500",
+    guardianName: "Mr. Ramesh Singh",
+    guardianPhone: "9876543211",
+    guardianRelation: "Father",
+  };
 
   const [formData, setFormData] = useState({
-    
     fullName: "",
     email: "",
     phone: "",
     dob: "",
     gender: "",
     category: "",
-
-    // Address Information
     address: "",
     city: "",
     state: "",
     pincode: "",
-
-    // Academic Information
-    course: "", // will store selected course_id
+    course: "",
     qualification: "",
     percentage: "",
     examName: "",
     examRank: "",
-
-    // Documents (File objects)
     photo: null,
     signature: null,
     marksheet10: null,
     marksheet12: null,
     entranceCard: null,
     idProof: null,
-
-    // Guardian Information
     guardianName: "",
     guardianPhone: "",
     guardianRelation: "",
@@ -47,7 +61,6 @@ const AdmissionForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
 
-  
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -65,6 +78,51 @@ const AdmissionForm = () => {
     fetchCourses();
   }, []);
 
+  // Auto-fill handler
+  const handleAutoFill = () => {
+    if (!autoFillEnabled) {
+      // Fill with default data
+      const filledData = {
+        ...defaultData,
+        course: courses.length > 0 ? courses[0].id : "",
+      };
+      setFormData((prev) => ({
+        ...prev,
+        ...filledData,
+      }));
+      setAutoFillEnabled(true);
+    } else {
+      // Clear form
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        dob: "",
+        gender: "",
+        category: "",
+        address: "",
+        city: "",
+        state: "",
+        pincode: "",
+        course: "",
+        qualification: "",
+        percentage: "",
+        examName: "",
+        examRank: "",
+        photo: null,
+        signature: null,
+        marksheet10: null,
+        marksheet12: null,
+        entranceCard: null,
+        idProof: null,
+        guardianName: "",
+        guardianPhone: "",
+        guardianRelation: "",
+      });
+      setUploadedFiles({});
+      setAutoFillEnabled(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,7 +147,6 @@ const AdmissionForm = () => {
     }
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -107,7 +164,21 @@ const AdmissionForm = () => {
       fd.append("student_name", formData.fullName);
       fd.append("email", formData.email);
       fd.append("phone", formData.phone);
-      fd.append("course_id", formData.course); // this is the selected course id
+      fd.append("dob", formData.dob);
+      fd.append("gender", formData.gender);
+      fd.append("category", formData.category);
+      fd.append("address", formData.address);
+      fd.append("city", formData.city);
+      fd.append("state", formData.state);
+      fd.append("pincode", formData.pincode);
+      fd.append("course_id", formData.course);
+      fd.append("qualification", formData.qualification);
+      fd.append("percentage", formData.percentage);
+      fd.append("examName", formData.examName);
+      fd.append("examRank", formData.examRank);
+      fd.append("guardianName", formData.guardianName);
+      fd.append("guardianPhone", formData.guardianPhone);
+      fd.append("guardianRelation", formData.guardianRelation);
 
       // Files (only append if they exist)
       if (formData.photo) fd.append("photo", formData.photo);
@@ -141,9 +212,8 @@ const AdmissionForm = () => {
 
       // after successful submission
       navigate(`/application-fee/${data.applicationId}`);
-      
+
       setIsSubmitting(false);
-      //navigate("/"); // go back to home
     } catch (err) {
       console.error("Network/other error:", err);
       alert("❌ Something went wrong while submitting. Please try again.");
@@ -151,12 +221,28 @@ const AdmissionForm = () => {
     }
   };
 
-  
   return (
     <div className="application-form-container">
       <div className="form-header">
         <h1>🎓 Admission Application Form</h1>
         <p>Fill in all the required details carefully</p>
+        
+        {/* Auto-fill Toggle Button */}
+        <div className="autofill-toggle">
+          <button
+            type="button"
+            className={`btn-autofill ${autoFillEnabled ? "active" : ""}`}
+            onClick={handleAutoFill}
+            disabled={isLoadingCourses}
+          >
+            {autoFillEnabled ? "🔄 Clear Form" : "⚡ Auto-fill Demo Data"}
+          </button>
+          {autoFillEnabled && (
+            <span className="autofill-notice">
+              ✓ Form filled with demo data - You can edit any field
+            </span>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="application-form">
@@ -384,6 +470,12 @@ const AdmissionForm = () => {
           <h2>📄 Document Upload</h2>
           <p className="document-note">
             Please upload clear scanned copies (PDF/JPG, Max 2MB each)
+            {autoFillEnabled && (
+              <span className="warning-text">
+                {" "}
+                - Note: Files are NOT auto-filled, please upload manually
+              </span>
+            )}
           </p>
 
           <div className="form-grid">
@@ -554,4 +646,3 @@ const AdmissionForm = () => {
 };
 
 export default AdmissionForm;
-
