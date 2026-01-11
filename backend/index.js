@@ -12,6 +12,12 @@ dotenv.config();
 const app = express();
 
 app.use(
+  "/receipts",
+  express.static(path.join(__dirname, "receipts"))
+);
+
+
+app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
