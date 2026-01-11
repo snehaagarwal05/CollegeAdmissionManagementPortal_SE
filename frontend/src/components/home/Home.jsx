@@ -160,6 +160,13 @@ const Home = () => {
                     setStudentId(data.studentId);
                     setPassword(data.password);
                   });
+                {studentId && (
+                    <div>
+                      <p>Student ID: <b>{studentId}</b></p>
+                      <p>Password: <b>{password}</b></p>
+                    </div>
+                  )}
+
               }}
             >
               Submit
