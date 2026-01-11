@@ -78,6 +78,13 @@ const AdmissionForm = () => {
     fetchCourses();
   }, []);
 
+  // Create dummy file objects for demo
+  const createDummyFile = (name, type = "image/jpeg") => {
+    // Create a small dummy file (1x1 pixel)
+    const blob = new Blob(["dummy"], { type });
+    return new File([blob], name, { type });
+  };
+
   // Auto-fill handler
   const handleAutoFill = () => {
     if (!autoFillEnabled) {
@@ -85,11 +92,30 @@ const AdmissionForm = () => {
       const filledData = {
         ...defaultData,
         course: courses.length > 0 ? courses[0].id : "",
+        // Add dummy files
+        photo: createDummyFile("demo_photo.jpg"),
+        signature: createDummyFile("demo_signature.jpg"),
+        marksheet10: createDummyFile("demo_10th_marksheet.pdf", "application/pdf"),
+        marksheet12: createDummyFile("demo_12th_marksheet.pdf", "application/pdf"),
+        entranceCard: createDummyFile("demo_entrance_card.pdf", "application/pdf"),
+        idProof: createDummyFile("demo_aadhar.pdf", "application/pdf"),
       };
+      
       setFormData((prev) => ({
         ...prev,
         ...filledData,
       }));
+
+      // Set uploaded file names for display
+      setUploadedFiles({
+        photo: "demo_photo.jpg",
+        signature: "demo_signature.jpg",
+        marksheet10: "demo_10th_marksheet.pdf",
+        marksheet12: "demo_12th_marksheet.pdf",
+        entranceCard: "demo_entrance_card.pdf",
+        idProof: "demo_aadhar.pdf",
+      });
+
       setAutoFillEnabled(true);
     } else {
       // Clear form
@@ -471,9 +497,9 @@ const AdmissionForm = () => {
           <p className="document-note">
             Please upload clear scanned copies (PDF/JPG, Max 2MB each)
             {autoFillEnabled && (
-              <span className="warning-text">
+              <span className="demo-text">
                 {" "}
-                - Note: Files are NOT auto-filled, please upload manually
+                ✓ Demo files auto-filled (dummy placeholders for testing)
               </span>
             )}
           </p>
@@ -481,87 +507,199 @@ const AdmissionForm = () => {
           <div className="form-grid">
             <div className="form-group">
               <label>Passport Size Photo *</label>
-              <input
-                type="file"
-                name="photo"
-                onChange={handleFileChange}
-                accept="image/*"
-                required
-              />
-              {uploadedFiles.photo && (
-                <span className="file-name">✓ {uploadedFiles.photo}</span>
+              {uploadedFiles.photo && autoFillEnabled ? (
+                <div className="file-uploaded-box">
+                  <span className="file-icon">📄</span>
+                  <span className="file-name-display">{uploadedFiles.photo}</span>
+                  <button
+                    type="button"
+                    className="btn-change-file"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, photo: null }));
+                      setUploadedFiles((prev) => ({ ...prev, photo: null }));
+                    }}
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="file"
+                    name="photo"
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    required={!formData.photo}
+                  />
+                  {uploadedFiles.photo && (
+                    <span className="file-name">✓ {uploadedFiles.photo}</span>
+                  )}
+                </>
               )}
             </div>
 
             <div className="form-group">
               <label>Signature *</label>
-              <input
-                type="file"
-                name="signature"
-                onChange={handleFileChange}
-                accept="image/*"
-                required
-              />
-              {uploadedFiles.signature && (
-                <span className="file-name">✓ {uploadedFiles.signature}</span>
+              {uploadedFiles.signature && autoFillEnabled ? (
+                <div className="file-uploaded-box">
+                  <span className="file-icon">📄</span>
+                  <span className="file-name-display">{uploadedFiles.signature}</span>
+                  <button
+                    type="button"
+                    className="btn-change-file"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, signature: null }));
+                      setUploadedFiles((prev) => ({ ...prev, signature: null }));
+                    }}
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="file"
+                    name="signature"
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    required={!formData.signature}
+                  />
+                  {uploadedFiles.signature && (
+                    <span className="file-name">✓ {uploadedFiles.signature}</span>
+                  )}
+                </>
               )}
             </div>
 
             <div className="form-group">
               <label>10th Marksheet *</label>
-              <input
-                type="file"
-                name="marksheet10"
-                onChange={handleFileChange}
-                accept=".pdf,image/*"
-                required
-              />
-              {uploadedFiles.marksheet10 && (
-                <span className="file-name">✓ {uploadedFiles.marksheet10}</span>
+              {uploadedFiles.marksheet10 && autoFillEnabled ? (
+                <div className="file-uploaded-box">
+                  <span className="file-icon">📄</span>
+                  <span className="file-name-display">{uploadedFiles.marksheet10}</span>
+                  <button
+                    type="button"
+                    className="btn-change-file"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, marksheet10: null }));
+                      setUploadedFiles((prev) => ({ ...prev, marksheet10: null }));
+                    }}
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="file"
+                    name="marksheet10"
+                    onChange={handleFileChange}
+                    accept=".pdf,image/*"
+                    required={!formData.marksheet10}
+                  />
+                  {uploadedFiles.marksheet10 && (
+                    <span className="file-name">✓ {uploadedFiles.marksheet10}</span>
+                  )}
+                </>
               )}
             </div>
 
             <div className="form-group">
               <label>12th/Graduation Marksheet *</label>
-              <input
-                type="file"
-                name="marksheet12"
-                onChange={handleFileChange}
-                accept=".pdf,image/*"
-                required
-              />
-              {uploadedFiles.marksheet12 && (
-                <span className="file-name">✓ {uploadedFiles.marksheet12}</span>
+              {uploadedFiles.marksheet12 && autoFillEnabled ? (
+                <div className="file-uploaded-box">
+                  <span className="file-icon">📄</span>
+                  <span className="file-name-display">{uploadedFiles.marksheet12}</span>
+                  <button
+                    type="button"
+                    className="btn-change-file"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, marksheet12: null }));
+                      setUploadedFiles((prev) => ({ ...prev, marksheet12: null }));
+                    }}
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="file"
+                    name="marksheet12"
+                    onChange={handleFileChange}
+                    accept=".pdf,image/*"
+                    required={!formData.marksheet12}
+                  />
+                  {uploadedFiles.marksheet12 && (
+                    <span className="file-name">✓ {uploadedFiles.marksheet12}</span>
+                  )}
+                </>
               )}
             </div>
 
             <div className="form-group">
               <label>Entrance Exam Scorecard *</label>
-              <input
-                type="file"
-                name="entranceCard"
-                onChange={handleFileChange}
-                accept=".pdf,image/*"
-                required
-              />
-              {uploadedFiles.entranceCard && (
-                <span className="file-name">
-                  ✓ {uploadedFiles.entranceCard}
-                </span>
+              {uploadedFiles.entranceCard && autoFillEnabled ? (
+                <div className="file-uploaded-box">
+                  <span className="file-icon">📄</span>
+                  <span className="file-name-display">{uploadedFiles.entranceCard}</span>
+                  <button
+                    type="button"
+                    className="btn-change-file"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, entranceCard: null }));
+                      setUploadedFiles((prev) => ({ ...prev, entranceCard: null }));
+                    }}
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="file"
+                    name="entranceCard"
+                    onChange={handleFileChange}
+                    accept=".pdf,image/*"
+                    required={!formData.entranceCard}
+                  />
+                  {uploadedFiles.entranceCard && (
+                    <span className="file-name">✓ {uploadedFiles.entranceCard}</span>
+                  )}
+                </>
               )}
             </div>
 
             <div className="form-group">
               <label>ID Proof (Aadhar/PAN) *</label>
-              <input
-                type="file"
-                name="idProof"
-                onChange={handleFileChange}
-                accept=".pdf,image/*"
-                required
-              />
-              {uploadedFiles.idProof && (
-                <span className="file-name">✓ {uploadedFiles.idProof}</span>
+              {uploadedFiles.idProof && autoFillEnabled ? (
+                <div className="file-uploaded-box">
+                  <span className="file-icon">📄</span>
+                  <span className="file-name-display">{uploadedFiles.idProof}</span>
+                  <button
+                    type="button"
+                    className="btn-change-file"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, idProof: null }));
+                      setUploadedFiles((prev) => ({ ...prev, idProof: null }));
+                    }}
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="file"
+                    name="idProof"
+                    onChange={handleFileChange}
+                    accept=".pdf,image/*"
+                    required={!formData.idProof}
+                  />
+                  {uploadedFiles.idProof && (
+                    <span className="file-name">✓ {uploadedFiles.idProof}</span>
+                  )}
+                </>
               )}
             </div>
           </div>
