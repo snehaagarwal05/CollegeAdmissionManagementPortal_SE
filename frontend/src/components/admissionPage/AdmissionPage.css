@@ -64,6 +64,57 @@
   font-style: italic;
 }
 
+.demo-text {
+  color: #48bb78;
+  font-weight: 600;
+  font-style: italic;
+}
+
+/* File Upload Display Box */
+.file-uploaded-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #e6f7ed 0%, #f0fdf4 100%);
+  border: 2px solid #48bb78;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.file-uploaded-box:hover {
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.2);
+}
+
+.file-icon {
+  font-size: 24px;
+}
+
+.file-name-display {
+  flex: 1;
+  color: #2d3748;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.btn-change-file {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-change-file:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-1px);
+}
+
 /* Existing styles (make sure you have these) */
 
 .application-form-container {
