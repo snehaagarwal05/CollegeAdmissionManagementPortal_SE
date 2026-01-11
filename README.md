@@ -68,9 +68,10 @@ This system eliminates manual paperwork, reduces errors, and improves transparen
 2. Backend Setup
     cd backend
     npm install
+    npm install pdfkit
     npm start
 
-3. Frontend Setup
+4. Frontend Setup
     cd frontend
     npm install
     npm run dev
