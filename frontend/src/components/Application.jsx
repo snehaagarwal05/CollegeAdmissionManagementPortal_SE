@@ -31,10 +31,32 @@ const ApplicationFee = () => {
         const result = await verify.json();
 
         if (result.success) {
-          alert("✅ Payment successful! Your application is now complete.");
-        } else {
-          alert("❌ Payment verification failed");
-        }
+            alert("✅ Payment successful! Your application is now complete.");
+
+            // 🔹 NEW: Generate receipt
+            const receiptRes = await fetch(
+              "http://localhost:5000/api/payment/pay",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  applicationId: id,
+                  amount: 100,
+                }),
+              }
+            );
+
+            const receiptData = await receiptRes.json();
+
+            if (receiptData.success) {
+              window.open(
+                `http://localhost:5000/receipts/${receiptData.receiptFile}`,
+                "_blank"
+              );
+            }
+          } else {
+            alert("❌ Payment verification failed");
+          }
       },
       theme: {
         color: "#0a1f44",
@@ -84,3 +106,4 @@ const ApplicationFee = () => {
 };
 
 export default ApplicationFee;
+
