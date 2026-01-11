@@ -69,6 +69,7 @@ This system eliminates manual paperwork, reduces errors, and improves transparen
     cd backend
     npm install
     npm install pdfkit
+    npm install razorpay
     npm start
 
 4. Frontend Setup
