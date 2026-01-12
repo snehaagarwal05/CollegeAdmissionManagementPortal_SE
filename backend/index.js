@@ -17,6 +17,17 @@ app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+const admitCardStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/admitcards/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `admit_${Date.now()}.pdf`);
+  },
+});
+
+const uploadAdmitCard = multer({ storage: admitCardStorage });
+
 // DB CONNECTION
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -661,6 +672,124 @@ app.post("/api/additional-documents/:docId/upload", upload.single("file"), async
   }
 });
 
+app.patch("/api/additional-documents/:docId/approve", async (req, res) => {
+  const { docId } = req.params;
+
+  try {
+    const [result] = await pool.query(
+      "UPDATE additional_documents SET status = 'approved' WHERE id = ?",
+      [docId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Document request not found" });
+    }
+
+    res.json({ message: "Additional document approved" });
+  } catch (err) {
+    console.error("Approve extra doc error:", err);
+    res.status(500).json({ error: "Failed to approve document" });
+  }
+});
+
+
+// ---------------------------------------------------------
+// SELECTION STATUS UPDATE
+// ---------------------------------------------------------
+app.put("/api/officer/selection/:id", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!["selected", "waitlisted", "rejected", "none"].includes(status)) {
+    return res.status(400).json({ error: "Invalid status" });
+  }
+
+  try {
+    await pool.query("UPDATE applications SET selection_status = ? WHERE id = ?", [
+      status,
+      id,
+    ]);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Selection update error:", err);
+    res.status(500).json({ error: "Update failed" });
+  }
+});
+
+// ---------------------------------------------------------
+// MERIT LIST
+// ---------------------------------------------------------
+app.get("/api/officer/merit-list", async (req, res) => {
+  const [rows] = await pool.query(
+    `SELECT id, student_name, examRank, percentage, course_id, selection_status
+     FROM applications
+     ORDER BY examRank ASC`
+  );
+
+  res.json(rows);
+});
+
+// ---------------------------------------------------------
+// ADMISSION LETTER PDF
+// ---------------------------------------------------------
+app.get("/api/officer/admission-letter/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const [rows] = await pool.query(
+    `SELECT student_name, email, course_id FROM applications WHERE id = ?`,
+    [id]
+  );
+
+  if (!rows.length) return res.status(404).json({ error: "Not found" });
+
+  const s = rows[0];
+
+  const doc = new PDFDocument();
+  res.setHeader("Content-Type", "application/pdf");
+
+  doc.text("TIE COLLEGE", { align: "center" });
+  doc.text("------------------------------");
+  doc.moveDown();
+  doc.text(`Dear ${s.student_name},`);
+  doc.moveDown();
+  doc.text("You are selected for:");
+  doc.text(`Course ID: ${s.course_id}`);
+  doc.moveDown();
+  doc.text("Please report with your documents.");
+  doc.text("Regards,");
+  doc.text("Admission Office");
+
+  doc.pipe(res);
+  doc.end();
+});
+
+// ---------------------------------------------------------
+// OFFICER DASHBOARD STATS
+// ---------------------------------------------------------
+app.get("/api/officer/stats", async (req, res) => {
+  try {
+    const [[total]] = await pool.query(
+      "SELECT COUNT(*) AS total FROM applications"
+    );
+    const [[verified]] = await pool.query(
+      "SELECT COUNT(*) AS verified FROM applications WHERE documents_verified = 1"
+    );
+    const [[selected]] = await pool.query(
+      "SELECT COUNT(*) AS selected FROM applications WHERE selection_status = 'selected'"
+    );
+
+    res.json({
+      totalApplications: total.total,
+      verifiedDocuments: verified.verified,
+      selectedStudents: selected.selected,
+    });
+  } catch (err) {
+    console.error("Stats error:", err);
+    res.status(500).json({ error: "Stats failed" });
+  }
+});
+
 /* ==================== PORTAL REGISTRATION ==================== */
 
 app.post("/api/portal-register", async (req, res) => {
@@ -713,6 +842,412 @@ app.post("/api/get-student-id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+// ---------------------------------------------------------
+// INTERVIEW DATE
+// ---------------------------------------------------------
+app.patch("/api/applications/:id/interview-date", async (req, res) => {
+  const { id } = req.params;
+  const { interview_date } = req.body;
+
+  if (!interview_date) {
+    return res.status(400).json({ error: "Date is required" });
+  }
+
+  try {
+    await pool.query(
+      "UPDATE applications SET interview_date = ? WHERE id = ?",
+      [interview_date, id]
+    );
+
+    // 👉 AUTO GENERATE ADMIT CARD
+    await fetch(`http://localhost:5000/api/applications/${id}/generate-admit-card`, {
+      method: "POST",
+    });
+
+    res.json({ success: true, message: "Interview date saved & admit card generated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------------------
+// UPLOAD ADMIT CARD
+// ---------------------------------------------------------
+app.post(
+  "/api/applications/:id/upload-admit-card",
+  uploadAdmitCard.single("admit_card"),
+  async (req, res) => {
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const filePath = "/uploads/admitcards/" + req.file.filename;
+
+    try {
+      await pool.query(
+        "UPDATE applications SET admit_card_path = ? WHERE id = ?",
+        [filePath, id]
+      );
+
+      res.json({ success: true, path: filePath });
+    } catch (err) {
+      console.error("Admit card upload error:", err);
+      res.status(500).json({ error: "Database update failed" });
+    }
+  }
+);
+
+app.patch("/api/applications/:id/interview-date", async (req, res) => {
+  const { id } = req.params;
+  const { interview_date } = req.body;
+
+  if (!interview_date) {
+    return res.status(400).json({ error: "Date is required" });
+  }
+
+  try {
+    // Fetch applicant info for PDF
+    const [rows] = await pool.query(
+      `SELECT a.*, c.name AS course_name
+       FROM applications a
+       LEFT JOIN courses c ON a.course_id = c.id
+       WHERE a.id = ?`,
+      [id]
+    );
+
+    if (!rows.length) return res.status(404).json({ error: "Not found" });
+
+    const s = rows[0];
+
+    // Generate filename
+    const fileName = `admit_${id}_${Date.now()}.pdf`;
+    const filePath = path.join(__dirname, "uploads/admitcards", fileName);
+
+    // Create PDF
+    const PDFDocument = require("pdfkit");
+    const doc = new PDFDocument();
+
+    doc.pipe(fs.createWriteStream(filePath));
+
+    /* ------------ HEADER -------------- */
+    doc
+      .rect(0, 0, 600, 110)
+      .fill("#0b2d57");
+
+    doc
+      .fill("#fff")
+      .fontSize(28)
+      .text("TIE COLLEGE", 50, 30);
+
+    doc
+      .fontSize(14)
+      .text("College Admission Management System", 50, 65);
+
+    doc.moveDown(3);
+
+    /* ------------ TITLE -------------- */
+    doc
+      .fill("#000")
+      .fontSize(20)
+      .text("ADMIT CARD", { align: "center" });
+
+    doc.moveDown(1);
+
+    /* ------------ DETAILS BOX -------------- */
+    doc
+      .lineWidth(1)
+      .roundedRect(50, 180, 500, 260, 10)
+      .stroke();
+
+    doc.fontSize(14);
+
+    doc.text(`Name: ${s.student_name}`, 70, 200);
+    doc.text(`Application ID: ${s.id}`, 70, 230);
+    doc.text(`Course: ${s.course_name}`, 70, 260);
+    doc.text(`Interview Date: ${interview_date}`, 70, 290);
+    doc.text(`Venue: TIE College Main Campus, Room 208`, 70, 320);
+
+    /* ------------ FOOTER -------------- */
+    doc
+      .fontSize(12)
+      .fillColor("gray")
+      .text("Please carry all original documents.", 70, 380);
+
+    doc.end();
+
+    // Update DB path
+    await pool.query(
+      "UPDATE applications SET interview_date = ?, admit_card_path = ? WHERE id = ?",
+      [interview_date, `/uploads/admitcards/${fileName}`, id]
+    );
+
+    res.json({
+      success: true,
+      message: "Interview date saved & admit card generated",
+      admit_card: `/uploads/admitcards/${fileName}`
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
+// ==================== ADVANCED ADMIT CARD PDF GENERATION ====================
+app.post("/api/applications/:id/generate-admit-card", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT a.*, c.name AS course_name 
+       FROM applications a
+       LEFT JOIN courses c ON a.course_id = c.id
+       WHERE a.id = ?`,
+      [id]
+    );
+
+    if (!rows.length) return res.status(404).json({ error: "Application not found" });
+
+    const s = rows[0];
+
+    if (!s.interview_date)
+      return res.status(400).json({ error: "Interview date not set" });
+
+    const admitFolder = path.join(__dirname, "uploads/admitcards");
+    if (!fs.existsSync(admitFolder)) fs.mkdirSync(admitFolder, { recursive: true });
+
+    const filePath = `/uploads/admitcards/admit_${id}.pdf`;
+    const absolutePath = path.join(__dirname, filePath);
+
+    // Generate PDF
+    const doc = new PDFDocument({ size: "A4", margin: 50 });
+    const stream = fs.createWriteStream(absolutePath);
+    doc.pipe(stream);
+
+    // ---------------- HEADER ----------------
+    doc
+      .rect(0, 0, doc.page.width, 90)
+      .fill("#0a3d62");
+
+    doc
+      .fillColor("white")
+      .fontSize(28)
+      .text("TIE COLLEGE", 50, 25);
+
+    doc
+      .fontSize(12)
+      .text("OFFICIAL ADMIT CARD", 50, 60);
+
+    // ---------------- BOX CONTAINER ----------------
+    doc
+      .rect(40, 120, doc.page.width - 80, 500)
+      .strokeColor("#0a3d62")
+      .lineWidth(2)
+      .stroke();
+
+    doc
+      .fontSize(20)
+      .fillColor("#0a3d62")
+      .text("ADMIT CARD", 0, 135, { align: "center" });
+
+    // ---------------- STUDENT DETAILS LEFT ----------------
+    const leftX = 60;
+    let y = 180;
+
+    const label = (t) => doc.fillColor("#0a3d62").fontSize(12).text(t, leftX, y);
+    const value = (t) => doc.fillColor("black").fontSize(12).text(t, leftX + 150, y);
+
+    label("Student Name:");
+    value(s.student_name); y += 30;
+
+    label("Application ID:");
+    value(`#${s.id}`); y += 30;
+
+    label("Course:");
+    value(s.course_name); y += 30;
+
+    label("Interview Date:");
+    value(new Date(s.interview_date).toLocaleString()); y += 30;
+
+    label("Venue:");
+    value("TIE College Main Campus"); y += 30;
+
+    label("Reporting Time:");
+    value("10:00 AM - 12:00 PM"); y += 30;
+
+    // ---------------- PHOTO ON RIGHT ----------------
+    if (s.photo_path) {
+      try {
+        const photoPath = path.join(__dirname, s.photo_path);
+        doc.image(photoPath, doc.page.width - 180, 160, {
+          fit: [120, 140],
+          align: "center",
+          valign: "center",
+        });
+      } catch (e) {
+        console.log("Photo not found");
+      }
+    }
+
+    // ---------------- INSTRUCTIONS ----------------
+    doc
+      .fontSize(14)
+      .fillColor("#0a3d62")
+      .text("Instructions:", 60, 380);
+
+    doc
+      .fontSize(11)
+      .fillColor("black")
+      .list(
+        [
+          "Bring this admit card & original ID proof.",
+          "Reach venue at least 30 minutes before time.",
+          "Electronic gadgets are not allowed inside.",
+          "Follow COVID guidelines & safety protocols.",
+        ],
+        70,
+        410
+      );
+
+    // ---------------- SIGNATURE AREA ----------------
+    doc
+      .moveTo(60, 520)
+      .lineTo(240, 520)
+      .stroke();
+
+    doc
+      .fontSize(12)
+      .fillColor("#0a3d62")
+      .text("Admission Officer Signature", 60, 525);
+
+    // ---------------- FOOTER ----------------
+    doc
+      .fontSize(10)
+      .fillColor("gray")
+      .text("This is a system-generated admit card. No signature required.", 0, 780, {
+        align: "center",
+      });
+
+    doc.end();
+
+    stream.on("finish", async () => {
+      await pool.query(
+        "UPDATE applications SET admit_card_path = ? WHERE id = ?",
+        [filePath, id]
+      );
+
+      res.json({
+        success: true,
+        message: "Admit card generated",
+        path: filePath,
+      });
+    });
+
+  } catch (err) {
+    console.error("Admit card generation error:", err);
+    res.status(500).json({ error: "Failed to generate admit card" });
+  }
+});
+
+/* ===================== NOTIFICATIONS ===================== */
+
+// Officer sends notification
+app.post("/api/officer/send-notification", async (req, res) => {
+  const { application_id, message } = req.body;
+
+  if (!application_id || !message) {
+    return res.status(400).json({ error: "Missing fields" });
+  }
+
+  try {
+    await pool.query(
+      "INSERT INTO notifications (application_id, message) VALUES (?, ?)",
+      [application_id, message]
+    );
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("Notification error:", err);
+    return res.status(500).json({ error: "Failed to send notification" });
+  }
+});
+
+// Student reads notifications
+app.get("/api/student/notifications", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT * FROM notifications ORDER BY created_at DESC"
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("Fetch notifications error:", err);
+    res.status(500).json({ error: "Failed to fetch notifications" });
+  }
+});
+
+
+// Officer sends notification to all students
+app.post("/api/officer/notify", async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message || message.trim() === "") {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
+    // store global notification for all students
+    await pool.query(
+      "INSERT INTO notifications (application_id, message) VALUES (NULL, ?)",
+      [message]
+    );
+
+    res.json({ success: true, message: "Notification saved" });
+  } catch (err) {
+    console.error("Notify error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/api/student/notifications", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT * FROM notifications ORDER BY created_at DESC"
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("Fetch notifications error:", err);
+    res.status(500).json({ error: "Failed to load notifications" });
+  }
+});
+
+app.post("/api/officer/notify", async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message || message.trim() === "") {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
+    // Insert a global notification (application_id is NULL)
+    await pool.query(
+      "INSERT INTO notifications (application_id, message, created_at) VALUES (NULL, ?, NOW())",
+      [message]
+    );
+
+    res.json({ success: true, message: "Notification sent" });
+  } catch (err) {
+    console.error("Notify error:", err);
+    res.status(500).json({ error: "Server error while sending notification" });
+  }
+});
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT} ✓`));
