@@ -4,6 +4,7 @@ import "./NotifyApplicants.css";
 const NotifyApplicants = () => {
   const [students, setStudents] = useState([]);
   const [filter, setFilter] = useState("all");
+
   const [search, setSearch] = useState("");
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
@@ -22,29 +23,35 @@ const NotifyApplicants = () => {
     fetchStudents();
   }, []);
 
+  // FILTER STUDENTS
   const filteredList = students.filter((s) => {
     if (filter === "selected" && s.selection_status !== "selected") return false;
     if (filter === "waitlisted" && s.selection_status !== "waitlisted") return false;
+
     if (search && !s.student_name.toLowerCase().includes(search.toLowerCase()))
       return false;
+
     return true;
   });
 
-  /* 🚀 NEW FUNCTION — send notifications to backend */
+  /* 🚀 SEND NOTIFICATION */
   const handleSend = async () => {
     if (!message.trim()) {
       alert("Please enter a message");
       return;
     }
 
+    // Collect all IDs correctly
     const selectedIds = filteredList.map((s) => s.id);
+
+    console.log("Sending IDs:", selectedIds);
 
     try {
       const res = await fetch("http://localhost:5000/api/officer/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          studentIds: selectedIds,
+          studentIds: selectedIds, // correct naming
           message,
         }),
       });
@@ -67,7 +74,9 @@ const NotifyApplicants = () => {
   return (
     <div className="notify-container">
       <h1 className="notify-title">📢 Notify Applicants</h1>
-      <p className="notify-subtitle">Send notifications to shortlisted or waitlisted candidates</p>
+      <p className="notify-subtitle">
+        Send notifications to shortlisted or waitlisted candidates
+      </p>
 
       {/* Filters */}
       <div className="notify-filters">
@@ -91,7 +100,14 @@ const NotifyApplicants = () => {
           <div key={s.id} className="student-card">
             <h3>{s.student_name}</h3>
             <p>Email: {s.email}</p>
-            <p>Status: <strong>{s.status}</strong></p>
+
+            {/* FIXED STATUS FIELD */}
+            <p>
+              Status:{" "}
+              <strong>
+                {s.selection_status || "pending"}
+              </strong>
+            </p>
           </div>
         ))}
 
@@ -116,13 +132,10 @@ const NotifyApplicants = () => {
 
       {/* Success popup */}
       {success && (
-        <div className="success-popup">
-          🎉 Notification sent successfully!
-        </div>
+        <div className="success-popup">🎉 Notification sent successfully!</div>
       )}
     </div>
   );
 };
 
 export default NotifyApplicants;
-
