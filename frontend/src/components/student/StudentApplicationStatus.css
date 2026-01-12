@@ -305,3 +305,202 @@
   background: #f8d7da;
   color: #842029;
 }
+
+
+/* ---------------- ADMIT CARD (Receipt UI) ---------------- */
+
+.admit-card-wrapper {
+  margin-top: 40px;
+  border: 1px solid #dcdcdc;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.admit-header {
+  background: #0a2a4f;
+  padding: 18px;
+  text-align: center;
+  color: white;
+}
+
+.admit-header h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.admit-header p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.admit-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 15px 0;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.admit-content-box {
+  padding: 20px 30px;
+}
+
+.admit-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px dashed #cfcfcf;
+}
+
+.admit-label {
+  font-weight: 600;
+  color: #555;
+}
+
+.admit-value {
+  color: #222;
+}
+
+.admit-download-btn {
+  display: block;
+  margin: 20px auto;
+  width: fit-content;
+  background: #0d6efd;
+  padding: 12px 20px;
+  border-radius: 6px;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.admit-download-btn:hover {
+  background: #0b5ed7;
+}
+
+.admit-not-ready {
+  text-align: center;
+  padding: 20px;
+  color: gray;
+}
+
+
+/* ----- Global Card Styling ----- */
+.pretty-card {
+  background: #ffffff;
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  margin-bottom: 35px;
+  transition: 0.2s ease;
+}
+
+.pretty-card:hover {
+  transform: translateY(-3px);
+}
+
+/* ----- Section Title ----- */
+.section-heading {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #1a3e8c;
+}
+
+/* ----- Result Header styling ----- */
+.result-header-upgraded {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 22px;
+  border-radius: 12px;
+  background: linear-gradient(to right, #e9f0ff, #f5f9ff);
+  border: 1px solid #d7e4ff;
+  margin-bottom: 22px;
+}
+
+/* ----- Status Pill new look ----- */
+.status-pill-modern {
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.status-pending {
+  background: #fff5d6;
+  color: #b78600;
+}
+
+.status-approved {
+  background: #d5f6df;
+  color: #0c7a2c;
+}
+
+.status-rejected {
+  background: #ffe0e0;
+  color: #cc3232;
+}
+
+/* ----- Admit Card (receipt style) ----- */
+.admit-wrapper {
+  border-radius: 14px;
+  border: 1px solid #d3e1f7;
+  padding: 30px;
+  background: #fbfdff;
+  margin-top: 25px;
+}
+
+.admit-heading {
+  text-align: center;
+  padding: 18px;
+  background: #143a70;
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 22px;
+}
+
+.admit-box {
+  padding: 22px;
+  border-radius: 10px;
+  border: 1px solid #eeeeee;
+  background: #ffffff;
+}
+
+.admit-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed #dddddd;
+}
+
+.admit-label {
+  font-weight: 600;
+  color: #444;
+}
+
+.admit-value {
+  font-weight: 500;
+}
+
+/* ----- Download Button ----- */
+.download-btn-pretty {
+  margin-top: 20px;
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: #0d6efd;
+  color: white;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.download-btn-pretty:hover {
+  background: #084ec1;
+  transform: scale(1.02);
+}
