@@ -89,6 +89,11 @@ This system eliminates manual paperwork, reduces errors, and improves transparen
         Existing Student 2
             Email: student2@gmail.com
             Password: student456
+    {id: "s001", password: "pass1", role: "student", name: "Sneha Agarwal" },
+  { id: "s002", password: "pass2", role: "student", name: "Rahul Mehta" },
+  { id: "s003", password: "pass3", role: "student", name: "Priya Sharma" },
+  { id: "admin", password: "admin123", role: "admin", name: "Administrator" },
+  { id: "teacher01", password: "abc123", role: "teacher", name: "Teacher" },
 
 ########--------- Learning Outcomes ----------########
 
